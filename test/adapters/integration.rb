@@ -225,6 +225,14 @@ module Adapters
         assert_equal '', response.body
       end
 
+      def test_ipv6_requests
+        server = self.class.live_server
+        uri = URI('%s://%s:%d' % [server.scheme, '[::1]', server.port])
+        conn = create_connection({}, uri)
+
+        assert_equal 'get', conn.get('echo').body
+      end
+
       def adapter
         raise NotImplementedError.new("Need to override #adapter")
       end
@@ -234,7 +242,7 @@ module Adapters
         []
       end
 
-      def create_connection(options = {})
+      def create_connection(options = {}, server = self.class.live_server)
         if adapter == :default
           builder_block = nil
         else
@@ -245,7 +253,6 @@ module Adapters
           end
         end
 
-        server = self.class.live_server
         url = '%s://%s:%d' % [server.scheme, server.host, server.port]
 
         options[:ssl] ||= {}
